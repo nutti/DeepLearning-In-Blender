@@ -1,0 +1,21 @@
+name: Deeplearning in Blender CI
+
+on:
+  push:
+    branches:
+      - master
+      - ci_testing
+  pull_request:
+
+jobs:
+  test:
+    name: Test dl package
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
+      
+      - name: Test dl package
+        run: python tests/python/run_tests.py -p .
