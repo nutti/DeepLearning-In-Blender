@@ -16,10 +16,12 @@ bl_info = {
 if "bpy" in locals():
     import importlib
     importlib.reload(node)
+    importlib.reload(op)
     importlib.reload(socket)
 else:
     import bpy
     from . import node
+    from . import op
     from . import socket
 
 import bpy
@@ -33,15 +35,20 @@ node_categories = [
         NodeItem(node.activation.TanhNode.bl_idname),
         NodeItem(node.activation.SoftmaxNode.bl_idname),
         NodeItem(node.linear.LinearNode.bl_idname),
+        NodeItem(node.system.BeginNode.bl_idname),
+        NodeItem(node.system.EndNode.bl_idname),
     ])
 ]
 
 
 classes = [
     socket.tensor.TensorSocket,
+    op.train.DL_OT_Train,
     node.activation.TanhNode,
     node.activation.SoftmaxNode,
     node.linear.LinearNode,
+    node.system.BeginNode,
+    node.system.EndNode,
 ]
 
 def register():
