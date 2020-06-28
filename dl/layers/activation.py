@@ -1,7 +1,11 @@
 import numpy as np
 
-class TanhLayer:
+from .layer_base import LayerBase
+
+class TanhLayer(LayerBase):
     def __init__(self):
+        super().__init__()
+
         self.cache = {}
 
     def forward(self, x):
@@ -12,10 +16,14 @@ class TanhLayer:
 
     def backward(self, dy):
         y = self.cache["y"]
+
         return (1 - np.power(y, 2)) * dy
 
-class SoftmaxLayer:
+
+class SoftmaxLayer(LayerBase):
     def __init__(self):
+        super().__init__()
+
         self.cache = {}
 
     def forward(self, x):

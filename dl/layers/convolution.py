@@ -1,14 +1,39 @@
 import numpy as np
 
-class Convolution2DLayer:
-    def __init__(self, stride=1, padding=0):
+from .layer_base import LayerBase
+
+
+class Convolution2DLayer(LayerBase):
+    def __init__(self, size, in_features, out_features, stride=1, padding=0):
+        super().__init__()
+
         self.cache = {}
+        self.params = {
+            "weight": np.zeros((size, size, in_features, out_features)),
+            "bias": np.zeros((1, 1, 1, out_features)),
+        }
+        self.grads = {
+            "weight": np.zeros((size, size, in_features, out_features)),
+            "bias": np.zeros((1, 1, 1, out_features)),
+        }
         self.hparams = {
             "stride": stride,
             "padding": padding,
         }
 
-    def forward(self, x, weight, bias):
+    def initialize_parameters(self):
+        self.params["weight"] = np.random.randn(*self.params["weight"].shape) * 0.01
+        self.params["bias"] = np.zeros(self.params["bias"].shape)
+
+    def parameters(self):
+        return self.params
+    
+    def gradients(self):
+        return self.grads
+
+    def forward(self, x):
+        weight = self.parameters["weight"]
+        bias = self.parameters["bias"]
         stride = self.hparams["stride"]
         padding = self.hparams["padding"]
 
@@ -40,15 +65,13 @@ class Convolution2DLayer:
                         y[i, h, w, c] = np.sum(xm_sliced * weight_sliced) + float(bias_sliced)
         
         self.cache["x"] = x
-        self.cache["weight"] = weight
-        self.cache["bias"] = bias
 
         return y
 
     def backward(self, dy):
         x = self.cache["x"]
-        weight = self.cache["weight"]
-        bias = self.cache["bias"]
+        weight = self.parameters["weight"]
+        bias = self.parameters["bias"]
 
         stride = self.hparams["stride"]
         padding = self.hparams["padding"]
@@ -91,4 +114,7 @@ class Convolution2DLayer:
 
         assert x.shape == dx.shape, "Shape does not match between x and dx" 
         
-        return dx, dw, db
+        self.grads["weight"] = dw
+        self.grads["bias"] = db
+
+        return dx
