@@ -15,11 +15,13 @@ bl_info = {
 
 if "bpy" in locals():
     import importlib
+    importlib.reload(dl)
     importlib.reload(node)
     importlib.reload(op)
     importlib.reload(socket)
 else:
     import bpy
+    from . import dl
     from . import node
     from . import op
     from . import socket
