@@ -12,7 +12,6 @@ warnings.simplefilter("error")
 
 def simple_nn(images, labels, test_images, test_labels):
     learning_rate = 0.1
-    num_classes = 10
     batch_size = 100
     num_batches = int(labels.shape[-1] / batch_size)
     epochs = 10
