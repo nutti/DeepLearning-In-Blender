@@ -1,6 +1,8 @@
 import unittest
 import os
 import numpy as np
+import torch
+
 
 LOG_DIR = "dl_test.log"
 
@@ -41,5 +43,9 @@ class DlTestBase(unittest.TestCase):
     def torch_to_numpy(self, torch_tensor):
         return torch_tensor.to("cpu").detach().numpy().copy()
 
+    def numpy_to_torch(self, numpy_tensor, requires_grad=False):
+        return torch.tensor(numpy_tensor.copy(), requires_grad=requires_grad)
+
     def assertClose(self, x, y, epsilon=1e-08):
         self.assertEqual(np.sum(np.abs(x - y) > epsilon), 0)
+

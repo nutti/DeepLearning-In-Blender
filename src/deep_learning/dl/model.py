@@ -1,5 +1,7 @@
 import numpy as np
 
+from . import gradient_check
+
 
 class Model():
     def __init__(self):
@@ -16,40 +18,59 @@ class Model():
         for l in layers:
             self.add_layer(l)
 
+    def numerical_gradient(self, X, t):
+        loss = lambda p : self.loss(X, t)
+
+        grads = {}
+        for l in self.layers:
+            for param_key in l.parameters().keys():
+                k = "{}:{}".format(l.name(), param_key)
+                grads[k] = gradient_check.numerical_gradient(loss, l.parameters()[param_key])
+
+        return grads
+
+    def check_gradient(self, X, t):
+        grads_1 = self.gradient(X, t)
+        grads_2 = self.numerical_gradient(X, t)
+
+        for k in grads_1.keys():
+            diff = np.average(np.abs(grads_1[k] - grads_2[k]))
+            assert diff < 1e-9, "Gradient check failed. (grad name: {}, diff: {})".format(k, diff)
+
     def gradient(self, X, t):
-        batch_size = X.shape[-1]
+        batch_size = t.shape[0]
 
         tensor = X
-        for l in self.layers:
+        for l in self.layers[:-1]:
             tensor = l.forward(tensor)
+        tensor = self.layers[-1].forward(tensor, t)
 
-        tensor = self.layers[-1].backward(t, batch_size)
-        for l in reversed(self.layers[:-1]):
+        tensor = np.ones((1, ))
+        for l in reversed(self.layers):
             tensor = l.backward(tensor)
 
-        grads = []
+        grads = {}
         for l in self.layers:
-            grads.extend(l.gradients().values())
+            for param_key in l.parameters().keys():
+                k = "{}:{}".format(l.name(), param_key)
+                grads[k] = l.gradients()[param_key]
 
         return grads
 
     def predict(self, X):
         tensor = X
-        for l in self.layers:
+        for l in self.layers[:-1]:
             tensor = l.forward(tensor)
 
         return tensor
 
-    def loss(self, X, y):
-        num_classes = 10
-        batch_size = X.shape[-1]
+    def loss(self, X, t):
+        p = self.predict(X)
+        l = self.layers[-1].forward(p, t)
 
-        a2 = self.predict(X)
-        l = -np.sum(np.sum(y * np.log(a2), axis=0)) / batch_size
-        
         return l
 
-    def update_paramters(self, grads, lr):
+    def update_paramters(self, lr):
         for l in self.layers:
             for param_key in l.parameters().keys():
                 l.parameters()[param_key] -= l.gradients()[param_key] * lr

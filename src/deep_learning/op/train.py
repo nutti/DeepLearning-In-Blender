@@ -64,13 +64,13 @@ class DL_OT_Train(bpy.types.Operator):
         epochs = 2
         batch_size = 100
         learning_rate = 0.1
-        num_batches = int(labels.shape[-1] / batch_size)
+        num_batches = int(labels.shape[0] / batch_size)
         for epoch in range(epochs):
             print("Epoch {}".format(epoch))
             for batch in range(num_batches):
-                batch_mask = np.random.choice(labels.shape[-1], batch_size)
-                X_train = images[:, batch_mask]
-                y_train = labels[:, batch_mask]
+                batch_mask = np.random.choice(labels.shape[0], batch_size)
+                X_train = images[batch_mask, :]
+                y_train = labels[batch_mask, :]
 
                 # gradient
                 grads = model.gradient(X_train, y_train)
@@ -85,7 +85,7 @@ class DL_OT_Train(bpy.types.Operator):
 
             # predict
             a2 = model.predict(test_images)
-            print(np.sum(np.argmax(np.log(a2), axis=0) == np.argmax(test_labels, axis=0)) / test_labels.shape[-1])
+            print(np.sum(np.argmax(np.log(a2), axis=1) == np.argmax(test_labels, axis=1)) / test_labels.shape[0])
 
 
         return {'FINISHED'}

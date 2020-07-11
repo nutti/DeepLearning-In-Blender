@@ -18,13 +18,13 @@ if "bpy" in locals():
     importlib.reload(dl)
     importlib.reload(node)
     importlib.reload(op)
-    importlib.reload(socket)
+    importlib.reload(node_socket)
 else:
     import bpy
     from . import dl
     from . import node
     from . import op
-    from . import socket
+    from . import node_socket
 
 import bpy
 

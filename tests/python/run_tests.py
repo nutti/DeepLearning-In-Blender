@@ -30,8 +30,13 @@ def main():
     import dl_test
 
     test_cases = [
+        dl_test.layers.element_wise_test.AddLayerTest,
+        dl_test.layers.element_wise_test.MulLayerTest,
         dl_test.layers.linear_test.LinearLayerTest,
         dl_test.layers.activation_test.TanhLayerTest,
+        dl_test.layers.activation_test.ReluLayerTest,
+        dl_test.layers.activation_test.SigmoidLayerTest,
+        dl_test.layers.activation_test.SoftmaxLayerTest,
         dl_test.layers.convolution_test.Convolution2DLayerTest,
     ]
 

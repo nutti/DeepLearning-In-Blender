@@ -1,29 +1,43 @@
 import numpy as np
+from collections import OrderedDict
 
 from .layer_base import LayerBase
 
 
 class Convolution2DLayer(LayerBase):
-    def __init__(self, size, in_features, out_features, stride=1, padding=0):
+    def __init__(self, kernel_size, in_channels, out_channels, stride=1, padding=0):
         super().__init__()
 
         self.cache = {}
-        self.params = {
-            "weight": np.zeros((size, size, in_features, out_features)),
-            "bias": np.zeros((1, 1, 1, out_features)),
-        }
-        self.grads = {
-            "weight": np.zeros((size, size, in_features, out_features)),
-            "bias": np.zeros((1, 1, 1, out_features)),
-        }
+
+        self.params = OrderedDict()
+        self.params["weight"] = np.zeros((out_channels, in_channels, kernel_size, kernel_size))
+        self.params["bias"] = np.zeros((out_channels, ))
+
+        self.grads = OrderedDict()
+        self.grads["weight"] = np.zeros((out_channels, in_channels, kernel_size, kernel_size))
+        self.grads["bias"] = np.zeros((out_channels, ))
+
         self.hparams = {
             "stride": stride,
             "padding": padding,
         }
 
-    def initialize_parameters(self):
-        self.params["weight"] = np.random.randn(*self.params["weight"].shape) * 0.01
-        self.params["bias"] = np.zeros(self.params["bias"].shape)
+    def id(self):
+        return "Convolution2D"
+
+    def initialize_parameters(self, weight=None, bias=None):
+        if weight is None:
+            self.params["weight"] = np.random.randn(*self.params["weight"].shape) * 0.01
+        else:
+            assert self.params["weight"].shape == weight.shape, "shape of 'weight' must be {}, but {}".format(self.params["weight"].shape, weight.shape)
+            self.params["weight"] = weight
+
+        if bias is None:
+            self.params["bias"] = np.zeros(self.params["bias"].shape)
+        else:
+            assert self.params["bias"].shape == bias.shape, "shape of 'bias' must be {}, but {}".format(self.params["bias"].shape, bias.shape)
+            self.params["bias"] = bias
 
     def parameters(self):
         return self.params
@@ -32,22 +46,22 @@ class Convolution2DLayer(LayerBase):
         return self.grads
 
     def forward(self, x):
-        weight = self.parameters["weight"]
-        bias = self.parameters["bias"]
+        weight = self.params["weight"]
+        bias = self.params["bias"]
         stride = self.hparams["stride"]
         padding = self.hparams["padding"]
 
-        assert x.shape[3] == weight.shape[2], "Shape does not match between x and weight"
-        assert weight.shape[0] == weight.shape[1], "Weight shape[0] and shape[1] must be same"
+        assert x.shape[1] == weight.shape[1], "Shape does not match between x.shape[1] ({}) and weight.shape[1] ({})".format(x.shape[1], weight.shape[1])
+        assert weight.shape[2] == weight.shape[3], "Weight shape[2] ({}) and shape[3] ({}) must be same".format(weight.shape[2], weight.shape[3])
 
-        m, hi, wi, ci = x.shape
-        f, f, ci, co = weight.shape
+        m, ci, hi, wi = x.shape
+        co, ci, f, f = weight.shape
 
         ho = int((hi - f + 2 * padding) / stride) + 1
         wo = int((wi - f + 2 * padding) / stride) + 1
 
-        y = np.zeros((m, ho, wo, co))
-        x_pad = np.pad(x, ((0, 0), (padding, padding), (padding, padding), (0, 0)),
+        y = np.zeros((m, co, ho, wo))
+        x_pad = np.pad(x, ((0, 0), (0, 0), (padding, padding), (padding, padding)),
                        mode="constant", constant_values=(0, 0))
         
         for i in range(m):
@@ -59,10 +73,10 @@ class Convolution2DLayer(LayerBase):
                     w_start = w * stride
                     w_end = w * stride + f
                     for c in range(co):
-                        xm_sliced = xm[h_start:h_end, w_start:w_end]
-                        weight_sliced = weight[:, :, :, c]
-                        bias_sliced = bias[:, :, :, c]
-                        y[i, h, w, c] = np.sum(xm_sliced * weight_sliced) + float(bias_sliced)
+                        xm_sliced = xm[:, h_start:h_end, w_start:w_end]
+                        weight_sliced = weight[c, :, :, :]
+                        bias_sliced = bias[c]
+                        y[i, c, h, w] = np.sum(xm_sliced * weight_sliced) + float(bias_sliced)
         
         self.cache["x"] = x
 
@@ -70,26 +84,26 @@ class Convolution2DLayer(LayerBase):
 
     def backward(self, dy):
         x = self.cache["x"]
-        weight = self.parameters["weight"]
-        bias = self.parameters["bias"]
+        weight = self.params["weight"]
+        bias = self.params["bias"]
 
         stride = self.hparams["stride"]
         padding = self.hparams["padding"]
 
-        assert x.shape[3] == weight.shape[2], "Shape does not match between x and weight"
-        assert weight.shape[0] == weight.shape[1], "Weight shape[0] and shape[1] must be same"
+        assert x.shape[1] == weight.shape[1], "Shape does not match between x.shape[1] ({}) and weight.shape[1] ({})".format(x.shape[1], weight.shape[1])
+        assert weight.shape[2] == weight.shape[3], "Weight shape[2] ({}) and shape[3] ({}) must be same".format(weight.shape[2], weight.shape[3])
 
-        m, hi, wi, ci = x.shape
-        f, f, ci, co = weight.shape
-        m, ho, wo, co = dy.shape
+        m, ci, hi, wi = x.shape
+        co, ci, f, f = weight.shape
+        m, co, ho, wo = dy.shape
 
-        dx = np.zeros((m, hi, wi, ci))
-        dw = np.zeros((f, f, ci, co))
-        db = np.zeros((1, 1, 1, co))
+        dx = np.zeros((m, ci, hi, wi))
+        dw = np.zeros((co, ci, f, f))
+        db = np.zeros((co,))
 
-        x_pad = np.pad(x, ((0, 0), (padding, padding), (padding, padding), (0, 0)),
+        x_pad = np.pad(x, ((0, 0), (0, 0), (padding, padding), (padding, padding)),
                        mode="constant", constant_values=(0, 0))
-        dx_pad = np.pad(dx, ((0, 0), (padding, padding), (padding, padding), (0, 0)),
+        dx_pad = np.pad(dx, ((0, 0), (0, 0), (padding, padding), (padding, padding)),
                         mode="constant", constant_values=(0, 0))
 
         for i in range(m):
@@ -103,16 +117,18 @@ class Convolution2DLayer(LayerBase):
                         w_start = w * stride
                         w_end = w * stride + f
 
-                        xm_sliced = xm[h_start:h_end, w_start:w_end]
-                        dxm[h_start:h_end, w_start:w_end] += weight[:, :, :, c] * dy[i, h, w, c]
-                        dw[:, :, :, c] += xm_sliced * dy[i, h, w, c]
-                        db[:, :, :, c] += dy[i, h, w, c]
+                        xm_sliced = xm[:, h_start:h_end, w_start:w_end]
+                        dxm[:, h_start:h_end, w_start:w_end] += weight[c, :, :, :] * dy[i, c, h, w]
+                        dw[c, :, :, :] += xm_sliced * dy[i, c, h, w]
+                        db[c] += dy[i, c, h, w]
             if padding != 0:
-                dx[i] = dxm[padding:-padding, padding:-padding]
+                dx[i] = dxm[:, padding:-padding, padding:-padding]
             else:
                 dx[i] = dxm
 
         assert x.shape == dx.shape, "Shape does not match between x and dx" 
+        assert weight.shape == dw.shape, "Shape does not match between weight and dw"
+        assert bias.shape == db.shape, "Shape does not match between bias and db"
         
         self.grads["weight"] = dw
         self.grads["bias"] = db

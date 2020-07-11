@@ -34,12 +34,11 @@ def load_mnist_data():
         with gzip.open(file_path, "rb") as f:
             data[k] = np.frombuffer(f.read(), np.uint8, offset=16)
             data[k] = data[k].reshape(-1, 28 * 28)
-            data[k] = np.transpose(data[k], axes=(1, 0))
     for k, v in MNIST_LABELS.items():
         file_path = DATASET_DIR + "/" + v
         with gzip.open(file_path, "rb") as f:
             data[k] = np.frombuffer(f.read(), np.uint8, offset=8)
-            data[k] = data[k].reshape(1, -1)
+            data[k] = data[k].reshape(-1, 1)
 
     return data
 
@@ -50,4 +49,4 @@ def normalize_data(data):
 
 def make_one_hot_label(label):
     max_label = np.max(label) + 1
-    return np.eye(max_label)[label.flatten()].T
+    return np.eye(max_label)[label.flatten()]
