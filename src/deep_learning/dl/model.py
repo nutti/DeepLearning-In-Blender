@@ -70,7 +70,14 @@ class Model():
 
         return l
 
-    def update_paramters(self, lr):
+    def update_paramters(self, optimizer):
+        params = {}
+        grads = {}
         for l in self.layers:
             for param_key in l.parameters().keys():
-                l.parameters()[param_key] -= l.gradients()[param_key] * lr
+                k = "{}:{}".format(l.name(), param_key)
+                params[k] = l.parameters()[param_key]
+                grads[k] = l.gradients()[param_key]
+
+        optimizer.optimize(params, grads)
+
