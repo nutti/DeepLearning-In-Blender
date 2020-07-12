@@ -38,7 +38,6 @@ class Convolution2DLayerTest(common.DlTestBase):
 
         self.assertEquals(expect.shape, actual.shape)
         self.assertClose(expect, actual, epsilon=1e-6)
-
     
     def test_foward_case_2(self):
         layer = Convolution2DLayer(kernel_size=2, in_channels=5, out_channels=3, stride=2, padding=1)
@@ -88,7 +87,6 @@ class Convolution2DLayerTest(common.DlTestBase):
         self.assertClose(dx_expect, dx_actual)
         self.assertClose(dw_expect, dw_actual)
         self.assertClose(db_expect, db_actual)
-
 
     def test_backward_case_2(self):
         layer = Convolution2DLayer(kernel_size=2, in_channels=5, out_channels=3, stride=2, padding=1)

@@ -40,6 +40,7 @@ def main():
         dl_test.layers.convolution_test.Convolution2DLayerTest,
         dl_test.layers.normalization_test.BatchNormalizationLayerTest,
         dl_test.layers.dropout_test.DropoutLayerTest,
+        dl_test.layers.pooling_test.MaxPooling2DLayerTest,
     ]
 
     suite = unittest.TestSuite()
