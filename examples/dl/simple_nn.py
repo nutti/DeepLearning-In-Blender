@@ -4,7 +4,7 @@ import warnings
 from dl.model import Model
 from dl.layers.activation import TanhLayer, SoftmaxWithLossLayer
 from dl.layers.linear import LinearLayer
-from dl.optimizers.sgd import SGD
+from dl.optimizers.adagrad import AdaGrad
 from dl.datasets import mnist
 
 warnings.resetwarnings()
@@ -26,7 +26,7 @@ def simple_nn(images, labels, test_images, test_labels):
     ])
     model.initialize_params()
 
-    optimizer = SGD(lr=learning_rate, momentum=0.9)
+    optimizer = AdaGrad(lr=learning_rate)
 
     for epoch in range(epochs):
         print("Epoch {}".format(epoch))
