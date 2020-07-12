@@ -6,6 +6,7 @@ from dl.layers.activation import TanhLayer, SoftmaxWithLossLayer
 from dl.layers.linear import LinearLayer
 from dl.optimizers.adam import Adam
 from dl.datasets import mnist
+from dl.initializers.normal import StandardNormalInitializer
 
 warnings.resetwarnings()
 warnings.simplefilter("error")
@@ -24,7 +25,7 @@ def simple_nn(images, labels, test_images, test_labels):
         LinearLayer(256, 10),
         SoftmaxWithLossLayer(),
     ])
-    model.initialize_params()
+    model.initialize_params(StandardNormalInitializer(0.01))
 
     optimizer = Adam()
 

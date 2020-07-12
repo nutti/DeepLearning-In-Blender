@@ -7,7 +7,7 @@ from dl.layers.activation import(
     ReluLayer,
     SigmoidLayer,
     TanhLayer,
-    SoftmaxLayer,
+    SoftmaxWithLossLayer,
 )
 
 from .. import common

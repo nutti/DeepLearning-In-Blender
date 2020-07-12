@@ -2,6 +2,7 @@ import numpy as np
 from collections import OrderedDict
 
 from .layer_base import LayerBase
+from ..initializers.normal import StandardNormalInitializer
 
 
 class Convolution2DLayer(LayerBase):
@@ -26,18 +27,13 @@ class Convolution2DLayer(LayerBase):
     def id(self):
         return "Convolution2D"
 
-    def initialize_parameters(self, weight=None, bias=None):
-        if weight is None:
-            self.params["weight"] = np.random.randn(*self.params["weight"].shape) * 0.01
+    def initialize_parameters(self, initializer_weight=None):
+        if initializer_weight is None:
+            self.params["weight"] = StandardNormalInitializer(0.01).init(self.params["weight"].shape)
         else:
-            assert self.params["weight"].shape == weight.shape, "shape of 'weight' must be {}, but {}".format(self.params["weight"].shape, weight.shape)
-            self.params["weight"] = weight
+            self.params["weight"] = initializer_weight.init(self.params["weight"].shape)
 
-        if bias is None:
-            self.params["bias"] = np.zeros(self.params["bias"].shape)
-        else:
-            assert self.params["bias"].shape == bias.shape, "shape of 'bias' must be {}, but {}".format(self.params["bias"].shape, bias.shape)
-            self.params["bias"] = bias
+        self.params["bias"] = np.zeros(self.params["bias"].shape)
 
     def parameters(self):
         return self.params

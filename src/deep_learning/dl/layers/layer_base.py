@@ -18,7 +18,7 @@ class LayerBase:
     def name(self):
         return self.name_
     
-    def initialize_parameters(self):
+    def initialize_parameters(self, initializer=None):
         pass
 
     def parameters(self):

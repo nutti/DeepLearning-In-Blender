@@ -7,9 +7,9 @@ class Model():
     def __init__(self):
         self.layers = []
 
-    def initialize_params(self):
+    def initialize_params(self, initializer=None):
         for l in self.layers:
-            l.initialize_parameters()
+            l.initialize_parameters(initializer)
 
     def add_layer(self, layer):
         self.layers.append(layer)

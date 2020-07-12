@@ -38,6 +38,7 @@ def main():
         dl_test.layers.activation_test.SigmoidLayerTest,
         dl_test.layers.activation_test.SoftmaxLayerTest,
         dl_test.layers.convolution_test.Convolution2DLayerTest,
+        dl_test.layers.normalization_test.BatchNormalizationLayerTest,
     ]
 
     suite = unittest.TestSuite()
