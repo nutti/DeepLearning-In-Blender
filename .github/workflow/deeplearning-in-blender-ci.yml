@@ -20,5 +20,5 @@ jobs:
       - name: List files
         run: ls .
 
-      - name: Test dl package
-        run: python tests/python/run_tests.py -p src/deep_learning
+      # - name: Test dl package
+      #   run: python tests/python/run_tests.py -p src/deep_learning
