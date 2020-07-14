@@ -17,5 +17,8 @@ jobs:
         with:
           python-version: "3.7"
       
+      - name: ls
+        run: ls .
+
       - name: Test dl package
         run: python tests/python/run_tests.py -p .
