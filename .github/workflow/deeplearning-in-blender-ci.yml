@@ -17,7 +17,7 @@ jobs:
         with:
           python-version: "3.7"
       
-      - name: ls
+      - name: List files
         run: ls .
 
       - name: Test dl package
