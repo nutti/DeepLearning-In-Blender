@@ -23,8 +23,8 @@ jobs:
       - name: Install python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip -r tests/python/requirements.txt
+          pip install -r tests/python/requirements.txt
 
       - name: Test dl module
-        run: python tests/python/run_tests.py -p .
+        run: python tests/python/run_tests.py -p src/deep_learning
 
